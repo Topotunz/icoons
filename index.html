@@ -12,12 +12,22 @@
         #canvas-container {
             border: 1px solid #ccc;
             margin-top: 20px;
+            width: 600px;
+            height: 400px;
+        }
+        canvas {
+            border: 1px solid #000;
         }
         .icon-preview {
             width: 50px;
             height: 50px;
             cursor: pointer;
             margin: 5px;
+        }
+        #icon-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -29,7 +39,9 @@
     <button id="save-button" disabled>Сохранить</button>
 
     <!-- Контейнер для холста -->
-    <div id="canvas-container"></div>
+    <div id="canvas-container">
+        <canvas id="editing-canvas" width="600" height="400"></canvas>
+    </div>
 
     <!-- Предпросмотр значков -->
     <h2>Доступные значки:</h2>
@@ -54,4 +66,64 @@
                         }
                         canvas.clear();
                         canvas setBackgroundImage(img.src, canvas.renderAll.bind(canvas), {
-                            scaleX: canvas.width / img.width
+                            scaleX: canvas.width / img.width,
+                            scaleY: canvas.height / img.height
+                        });
+                        document.getElementById('save-button').disabled = false;
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Добавление значков
+        const icons = [
+            'icons/icon1.png', // Убедитесь, что эти файлы загружены в папку icons
+            'icons/icon2.png',
+            'icons/icon3.png'
+        ];
+
+        const iconSelector = document.getElementById('icon-selector');
+        icons.forEach((iconPath, index) => {
+            const img = document.createElement('img');
+            img.src = iconPath; // Используем относительный путь к значкам
+            img.className = 'icon-preview';
+            img.setAttribute('draggable', true);
+
+            img.addEventListener('dragstart', function(event) {
+                event.dataTransfer.setData('text/plain', JSON.stringify({ url: img.src }));
+            });
+
+            iconSelector.appendChild(img);
+        });
+
+        // Обработка перетаскивания значков на холст
+        canvas = new fabric.Canvas('editing-canvas', { isDrawingMode: false });
+
+        canvas.on('drop', function(event) {
+            const data = JSON.parse(event.e.dataTransfer.getData('text/plain'));
+            fabric.Image.fromURL(data.url, function(img) {
+                img.set({
+                    left: event.pointer.x - img.width / 2,
+                    top: event.pointer.y - img.height / 2,
+                    scalable: true,
+                    selectable: true
+                });
+                canvas.add(img);
+            });
+        });
+
+        canvas.on('dragover', function(event) {
+            event.e.preventDefault();
+        });
+
+        // Сохранение изображения
+        document.getElementById('save-button').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL({ format: 'png' });
+            link.download = 'edited-image.png';
+            link.click();
+        });
+    </script>
+</body>
+</html>
