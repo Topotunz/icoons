@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #canvas-container {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        .icon-preview {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Изменение изображения с помощью значков</h1>
+
+    <!-- Загрузка изображения -->
+    <input type="file" id="image-upload" accept="image/*">
+    <button id="save-button" disabled>Сохранить</button>
+
+    <!-- Контейнер для холста -->
+    <div id="canvas-container"></div>
+
+    <!-- Предпросмотр значков -->
+    <h2>Доступные значки:</h2>
+    <div id="icon-selector"></div>
+
+    <!-- Подключение Fabric.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.6.0/fabric.min.js"></script>
+    <script>
+        // Инициализация холста
+        let canvas = null;
+
+        document.getElementById('image-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        if (!canvas) {
+                            canvas = new fabric.Canvas('editing-canvas', { isDrawingMode: false });
+                        }
+                        canvas.clear();
+                        canvas setBackgroundImage(img.src, canvas.renderAll.bind(canvas), {
+                            scaleX: canvas.width / img.width
